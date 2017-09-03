@@ -1,2 +1,4 @@
-# hsda-management
-This is the repository for the human services data API (HSDA) management.
+# HSDA
+This is the human services data API (HSDA).
+
+URL: http://developer.open.referral.adopta.agency/
