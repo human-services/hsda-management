@@ -25,18 +25,21 @@ if(isset($head['X_APPKEY'])){ $appkey = $head['X_APPKEY']; } else { $appkey = ""
 //echo $appkey . "<br />";
 
 // Get permissions
-if($appid!='' && $appkey != '')
+if(($appid!='' && $appkey != ''))
 	{
-	$management_base_url = $openapi['hsda-management']['schemes'][0] . '://' . $openapi['hsda-management']['host'] . $openapi['hsda-management']['basePath'];
-	$management_base_url = $management_base_url . 'users/auth/?login=' . $admin_login . '&code=' . $admin_code;	
-	//echo "management url: " . $management_base_url . "<br />";
-	$http = curl_init();  
-	curl_setopt($http, CURLOPT_URL, $management_base_url);  
-	curl_setopt($http, CURLOPT_RETURNTRANSFER, 1);   
-	
-	$output = curl_exec($http);
-	//echo $output;
-	$user_access = json_decode($output,true);		
+	if($appid != $admin_login && $appkey != $admin_code)
+		{		
+		$management_base_url = $openapi['hsda-management']['schemes'][0] . '://' . $openapi['hsda-management']['host'] . $openapi['hsda-management']['basePath'];
+		$management_base_url = $management_base_url . 'users/auth/?login=' . $admin_login . '&code=' . $admin_code;	
+		//echo "management url: " . $management_base_url . "<br />";
+		$http = curl_init();  
+		curl_setopt($http, CURLOPT_URL, $management_base_url);  
+		curl_setopt($http, CURLOPT_RETURNTRANSFER, 1);   
+		
+		$output = curl_exec($http);
+		//echo $output;
+		$user_access = json_decode($output,true);	
+		}
 	}
 else
 	{
@@ -112,7 +115,14 @@ foreach($paths as $path => $path_details)
   		// This logic is too vebose -- clean up
 		// I just don't know how to do the $app->[verb] and the $ids -- simmer on
 
-		// See if they have access
+		// Auth Override
+		//echo $appid . " == " . $admin_login . " && " . $appkey . " == " . $admin_code . "<br />";
+		//if($route == '/users/auth/' && $params['login'] == $admin_login && $params['code'] == $admin_code)
+		if($route == '/users/auth/'  && $appid == $admin_login && $appkey == $admin_code)
+			{
+			$access = 1;
+			}
+			
 		if($access==1)
 			{
 	
