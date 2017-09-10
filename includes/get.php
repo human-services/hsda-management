@@ -90,17 +90,24 @@ if($override==0)
 		// Multiple queries
 		if($parameter['name']=='queries')
 			{
-			if(isset($_get['queries']))
+			// default	
+			if(isset($_get['query']))
 				{
-				$qu_arr = explode(',',$_get['queries']);
-				foreach($qu_arr as $q)
-					{
-					//echo $q . "<br />";
-					$q_arr = explode('=',$q);
-					$field_name = $q_arr[0];
-					$field_value = $q_arr[1];
-					$where .= " " . $field_name . " LIKE '%" . $field_value . "%' AND";
-					}
+				$where .= " name LIKE '%" . $_get['query'] . "%' AND";
+				}
+			}				
+				
+		// multiple	
+		if(isset($_get['queries']))
+			{
+			$qu_arr = explode(',',$_get['queries']);
+			foreach($qu_arr as $q)
+				{
+				//echo $q . "<br />";
+				$q_arr = explode('=',$q);
+				$field_name = $q_arr[0];
+				$field_value = $q_arr[1];
+				$where .= " " . $field_name . " LIKE '%" . $field_value . "%' AND";
 				}
 			}
 	
@@ -179,6 +186,8 @@ if($override==0)
 		{
 		$Query .= " ORDER BY " . $sorting;
 		}
+		
+	$Pagination_Query = $Query;	
 	
 	if($paging!='')
 		{
@@ -260,6 +269,55 @@ if($override==0)
 		}
 	} // End override
 	
+	
+// Set pagination w/ header
+$pagination_results = $conn->query($Pagination_Query);	
+$total = count($pagination_results);
+
+if($total <= $per_page)
+	{
+	$total_pages = 1;
+	$first_page = true;
+	$last_page = true;
+	$previous_page = null;
+	$next_page = null;
+	}
+else
+	{
+	$total_pages = $total / $pagination_results;
+	if($page > 1)
+		{
+		$first_page = true;
+		$previous_page = null;
+		}
+	else
+		{
+		$first_page = false;
+		$previous_page = $page - 1;
+		}
+		
+	if($page == $total_pages)
+		{
+		$last_page = true;
+		$next_page = null;
+		}
+	else
+		{
+		$last_page = false;
+		$next_page = $page + 1;
+		}		
+	}
+
+$p = array();
+$p['total'] = $total;
+$p['total_pages'] = $total_pages;
+$p['first_page'] = $first_page;
+$p['last_page'] = $last_page;
+$p['previous_page'] = $previous_page;
+$p['next_page'] = $next_page;
+$pagination = json_encode($p);
+
+
 // Load any post extensions for this path	
 if (file_exists($postpath)) 
 	{
@@ -272,18 +330,21 @@ include "meta/post.php";
 //echo $head['ACCEPT'] . "<br />";
 if(isset($head['ACCEPT']) && $head['ACCEPT'] == 'text/csv')
 	{
+	$app->response()->header("X-Pagination", $pagination);	
 	$app->response()->header("Content-Type", "text/csv");	
 	$return_csv = generateCsv($ReturnObject);
 	echo $return_csv;
 	}
 elseif(isset($head['ACCEPT']) && $head['ACCEPT'] == 'application/xml')
 	{
+	$app->response()->header("X-Pagination", $pagination);	
 	$app->response()->header("Content-Type", "application/xml");	
 	$return_xml = arrayToXml($ReturnObject);
 	echo $return_xml;
 	}
 else
 	{
+	$app->response()->header("X-Pagination", $pagination);
 	$app->response()->header("Content-Type", "application/json");
 	echo stripslashes(format_json(json_encode($ReturnObject)));
 	}
