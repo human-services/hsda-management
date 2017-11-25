@@ -21,8 +21,14 @@ $head = $request->headers();
 if(isset($head['X_APPID'])){ $appid = $head['X_APPID']; } else { $appid = ""; }
 if(isset($head['X_APPKEY'])){ $appkey = $head['X_APPKEY']; } else { $appkey = ""; }
 
-//echo $appid . "<br />";
-//echo $appkey . "<br />";
+echo $appid . "<br />";
+echo $appkey . "<br />";
+
+$admin = 0;
+if($appid == $admin_login && $appkey == $admin_code)
+	{
+	$admin = 1;	
+	}
 
 // Get permissions
 if(($appid!='' && $appkey != '') && ($appid != $admin_login && $appkey != $admin_code))
@@ -97,16 +103,20 @@ foreach($paths as $path => $path_details)
 		
 		if($secured==1)
 			{
-			//echo "default: " . $openapi['hsda-default-system'] . "\n";	
-			//var_dump($user_access[$openapi['hsda-default-system']]);
-		//	echo "setting: " . $user_access[$openapi['hsda-default-system']][$route] . "\n";	
-			if(isset($user_access[$openapi['hsda-default-system']][$route][$verb]))
+			if($admin==1)
 				{
-				$access = 1;	
+				$access = 1;		
 				}
 			else
 				{
-				$access = 0;	
+				if(isset($user_access[$openapi['hsda-default-system']][$route][$verb]))
+					{
+					$access = 1;	
+					}
+				else
+					{
+					$access = 0;	
+					}
 				}
 			}
 		else
@@ -120,9 +130,11 @@ foreach($paths as $path => $path_details)
 		// I just don't know how to do the $app->[verb] and the $ids -- simmer on
 
 		// See if they have access
+		echo $appid . ' = ' . $admin_login . "<br />";
+		echo $appkey . ' = ' . $admin_code . "<br />";
 		if($access==1 || ($appid == $admin_login && $appkey == $admin_code))
 			{
-	
+			//echo "IN!";
 	  		// GET
 	    	if($verb == 'get')
 	    		{

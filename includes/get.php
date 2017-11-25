@@ -82,6 +82,7 @@ if($override==0)
 	$paging = "";
 	$page = 0;
 	$per_page = 25;
+	//echo $Query;
 	foreach($parameters as $parameter)
 		{
 	
@@ -271,9 +272,17 @@ if($override==0)
 	
 	
 // Set pagination w/ header
-$pagination_results = $conn->query($Pagination_Query);	
-$total = count($pagination_results);
-
+if(isset($Pagination_Query))
+	{
+	$pagination_results = $conn->query($Pagination_Query);	
+	$total = count($pagination_results);
+	}
+else
+	{
+	$total = 0;	
+	$per_page = 0;
+	}
+	
 if($total <= $per_page)
 	{
 	$total_pages = 1;
